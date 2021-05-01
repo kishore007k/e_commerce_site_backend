@@ -1,0 +1,34 @@
+# E Commerce Site:-
+
+## Database Modeling:-
+
+### Users:-
+
+- [ ] userName -> String
+- [ ] firstName -> String
+- [ ] lastName -> String
+- [ ] email -> String
+- [ ] password -> String
+- [ ] profileImg -> String
+
+---
+
+### Products:-
+
+- [ ] name -> String
+- [ ] desc -> String
+- [ ] count -> Int64
+- [ ] image -> Array -> String
+- [ ] review -> Array -> Object -> {name, email, image, review, createdAt}
+- [ ] price -> String
+- [ ] createdAt -> Date().now()
+
+---
+
+### Orders:-
+
+- [ ] userId -> String
+- [ ] userName -> String
+- [ ] productImages -> Array -> Object -> {itemName, itemImage, unitPrice, counts}
+- [ ] totalCost -> Int64
+- [ ] status -> Array -> Object -> {orderPlaced, inProgress, outForDelivery, delivered} => Boolean
