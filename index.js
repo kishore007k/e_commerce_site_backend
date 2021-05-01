@@ -3,7 +3,9 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import getProducts from "./routers/products.js";
+import products from "./routers/products.js";
+import users from "./routers/users.js";
+import admin from "./routers/admin.js";
 
 const app = express();
 dotenv.config();
@@ -15,7 +17,9 @@ app.use(cors());
 const URL = process.env.URL;
 const PORT = process.env.PORT || 3001;
 
-app.use("/api/products", getProducts);
+app.use("/api/products", products);
+app.use("/api/users", users);
+app.use("/admin", admin);
 
 app.get("/", (req, res) => {
 	res.send("Hello from API");
