@@ -1,20 +1,45 @@
 import mongoose from "mongoose";
 
-const orderModal = mongoose.Schema({
-	userId: { type: String, require: true },
-	userName: { type: String, require: true },
-	productImages: [
-		{ itemName: String, itemImage: String, unitPrice: String, counts: String },
-	],
-	totalCost: String,
-	status: [
-		{
-			orderPlaced: Boolean,
-			inProgress: Boolean,
-			outForDelivery: Boolean,
-			delivered: Boolean,
-		},
-	],
-});
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
-export default mongoose.model("orders", orderModal);
+const orderSchema = mongoose.Schema(
+	{
+		allProduct: [
+			{
+				id: { type: ObjectId, ref: "products" },
+				quantitiy: Number,
+			},
+		],
+		user: {
+			type: ObjectId,
+			ref: "users",
+			required: true,
+		},
+		amount: {
+			type: Number,
+			required: true,
+		},
+		transactionId: {
+			type: String,
+			required: true,
+		},
+		address: {
+			type: String,
+			required: true,
+		},
+		phone: {
+			type: Number,
+			required: true,
+		},
+		status: {
+			type: String,
+			default: "Not processed",
+			enum: ["Not processed", "Processing", "Shipped", "Delivered", "Cancelled"],
+		},
+	},
+	{ timestamps: true }
+);
+
+const orderModal = mongoose.model("orders", orderSchema);
+
+export default orderModal;

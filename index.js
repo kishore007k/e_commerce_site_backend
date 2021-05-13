@@ -6,6 +6,10 @@ import dotenv from "dotenv";
 import products from "./routers/products.js";
 import users from "./routers/users.js";
 import admin from "./routers/admin.js";
+import orders from "./routers/orders.js";
+import categories from "./routers/categories.js";
+import dashboard from "./routers/dashboard.js";
+import { adminAuth, auth } from "./middleware/auth.js";
 
 const app = express();
 dotenv.config();
@@ -17,11 +21,14 @@ app.use(cors());
 const URL = process.env.URL;
 const PORT = process.env.PORT || 3001;
 
-app.use("/api/products", products);
-app.use("/api/users", users);
 app.use("/admin", admin);
+app.use("/api/users", users);
+app.use("/api/products", adminAuth, products);
+app.use("/api/orders", adminAuth, orders);
+app.use("/api/categories", adminAuth, categories);
+app.use("/dashboard", adminAuth, dashboard);
 
-app.get("/", (req, res) => {
+app.get("/", auth, (req, res) => {
 	res.send("Hello from API");
 });
 
