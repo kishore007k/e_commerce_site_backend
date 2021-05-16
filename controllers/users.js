@@ -19,14 +19,14 @@ export const getAllUsers = async (req, res) => {
 export const getSingleUser = async (req, res) => {
 	let { uId } = req.body;
 	if (!uId) {
-		return res.json({ error: "All filled must be required" });
+		return res.json({ error: "User ID must be provided" });
 	} else {
 		try {
 			let User = await UserModal.findById(uId).select(
-				"name email phoneNumber userImage updatedAt createdAt"
+				"name email userName phoneNumber userImage updatedAt createdAt"
 			);
 			if (User) {
-				return res.json({ User });
+				return res.send({ User });
 			}
 		} catch (err) {
 			console.log(err);
@@ -110,20 +110,21 @@ export const addUser = async (req, res) => {
 };
 
 export const editUser = async (req, res) => {
-	let { uId, userName, phoneNumber, image } = req.body;
-	if (!uId || !userName || !phoneNumber) {
-		return res.json({ message: "All filled must be required" });
-	} else {
-		let currentUser = UserModal.findByIdAndUpdate(uId, {
+	const { uId, userName, phoneNumber, userImage } = req.body;
+
+	try {
+		const user = await UserModal.findById(uId);
+
+		const currentUser = await UserModal.findByIdAndUpdate(uId, {
 			userName: userName,
 			phoneNumber: phoneNumber,
-			image: image,
+			userImage: userImage,
 			updatedAt: Date.now(),
 		});
-		currentUser.exec((err, result) => {
-			if (err) console.log(err);
-			return res.json({ success: "User updated successfully" });
-		});
+
+		res.status(200).send({ ...user._doc, message: "User Updated Successfully" });
+	} catch (error) {
+		res.status(400).send({ message: error });
 	}
 };
 
@@ -191,9 +192,10 @@ export const loginUser = async (req, res) => {
 			if (login) {
 				const token = jwt.sign({ _id: data._id, role: data.userRole }, JWT_SECRET);
 				const encode = jwt.verify(token, JWT_SECRET);
-				return res.json({
+				return res.send({
 					token: token,
 					user: encode,
+					data,
 				});
 			} else {
 				return res.json({
