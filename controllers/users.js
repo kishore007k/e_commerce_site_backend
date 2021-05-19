@@ -2,8 +2,10 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { toTitleCase, validateEmail } from "../middleware/auth.js";
 import UserModal from "../models/userModal.js";
+import cryptoRandomString from "crypto-random-string";
 
 import { JWT_SECRET } from "../config/keys.js";
+import SendEmail from "../auth/SendEmail.js";
 
 export const getAllUsers = async (req, res) => {
 	try {
@@ -17,16 +19,14 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const getSingleUser = async (req, res) => {
-	let { uId } = req.body;
-	if (!uId) {
-		return res.json({ error: "User ID must be provided" });
+	let { id } = req.params;
+	if (!id) {
+		return res.json({ error: "User Email must be provided" });
 	} else {
 		try {
-			let User = await UserModal.findById(uId).select(
-				"name email userName phoneNumber userImage updatedAt createdAt"
-			);
-			if (User) {
-				return res.send({ User });
+			let user = await UserModal.findById(id);
+			if (user) {
+				return res.send({ user });
 			}
 		} catch (err) {
 			console.log(err);
@@ -48,7 +48,7 @@ export const addUser = async (req, res) => {
 		return res.json({ error });
 	}
 	if (userName.length < 3 || userName.length > 25) {
-		error = { ...error, userName: "userName must be 3-25 charecter" };
+		error = { ...error, userName: "userName must be 3-25 character" };
 		return res.json({ error });
 	} else {
 		if (validateEmail(email)) {
@@ -56,7 +56,7 @@ export const addUser = async (req, res) => {
 			if ((password.length > 255) | (password.length < 8)) {
 				error = {
 					...error,
-					password: "Password must be 8 charecter",
+					password: "Password must be 8 character",
 					userName: "",
 					email: "",
 				};
@@ -75,23 +75,21 @@ export const addUser = async (req, res) => {
 						};
 						return res.json({ error });
 					} else {
-						let newUser = new UserModal({
+						const secretKey = cryptoRandomString(24);
+						const newUser = new UserModal({
 							userName,
 							email,
 							password,
-							// ========= Here role 1 for admin signup role 0 for customer signup =========
-							userRole: 0, // Field userName change to userRole from role
+							secretKey,
+							userRole: 0,
 						});
-						newUser
-							.save()
-							.then((data) => {
-								return res.json({
-									success: "Account create successfully. Please login",
-								});
-							})
-							.catch((err) => {
-								console.log(err);
-							});
+						newUser.save().catch((err) => {
+							console.log(err);
+						});
+
+						// Email verification
+						SendEmail(email, secretKey);
+						res.send({ message: "Please verify your Email" });
 					}
 				} catch (err) {
 					console.log(err);
@@ -113,16 +111,16 @@ export const editUser = async (req, res) => {
 	const { uId, userName, phoneNumber, userImage } = req.body;
 
 	try {
-		const user = await UserModal.findById(uId);
-
-		const currentUser = await UserModal.findByIdAndUpdate(uId, {
+		await UserModal.findByIdAndUpdate(uId, {
 			userName: userName,
 			phoneNumber: phoneNumber,
 			userImage: userImage,
 			updatedAt: Date.now(),
 		});
 
-		res.status(200).send({ ...user._doc, message: "User Updated Successfully" });
+		const user = await UserModal.findById(uId);
+
+		res.status(200).send({ message: "User Updated Successfully", data: user });
 	} catch (error) {
 		res.status(400).send({ message: error });
 	}
@@ -205,5 +203,20 @@ export const loginUser = async (req, res) => {
 		}
 	} catch (err) {
 		console.log(err);
+	}
+};
+
+export const accountActivation = async (req, res) => {
+	const { secretKey } = req.params;
+
+	const user = await UserModal.findOne({ secretKey: secretKey });
+
+	if (user) {
+		console.log(user);
+		user.verified = true;
+		await user.save();
+		res.redirect("/");
+	} else {
+		res.json({ message: "User not found" });
 	}
 };
