@@ -1,13 +1,14 @@
 import JWT from "jsonwebtoken";
 import dotenv from "dotenv";
 import UserModal from "../models/userModal.js";
+import { JWT_SECRET } from "../config/keys.js";
 
 dotenv.config();
 
 export const adminAuth = (req, res, next) => {
 	try {
 		const token = req.headers.authorization.split(" ")[1];
-		const decoded = JWT.verify(token, process.env.JWT_ACCESS_SECRET);
+		const decoded = JWT.verify(token, JWT_SECRET);
 		res.userDate = decoded;
 		if (res.userDate.role === 1) return next();
 		return res.status(401).send({ message: "You are not an Admin" });
@@ -21,7 +22,7 @@ export const adminAuth = (req, res, next) => {
 export const auth = (req, res, next) => {
 	try {
 		const token = req.headers.authorization.split(" ")[1];
-		const decoded = JWT.verify(token, process.env.JWT_ACCESS_SECRET);
+		const decoded = JWT.verify(token, JWT_SECRET);
 		res.userDate = decoded;
 		next();
 	} catch (error) {
@@ -97,12 +98,23 @@ export const loginCheck = async (req, res, next) => {
 	try {
 		let token = req.headers.token;
 		token = token.replace("Bearer ", "");
-		decode = JWT.verify(token, process.env.JWT_ACCESS_SECRET);
+		decode = JWT.verify(token, JWT_SECRET);
 		req.userDetails = decode;
 		next();
 	} catch (err) {
 		res.json({
 			error: "You must be logged in",
 		});
+	}
+};
+
+export const userCheck = async (req, res, next) => {
+	const { email, secretKey } = req.params;
+
+	const user = await UserModal.findOne({ secretKey: secretKey });
+	try {
+		if (user) next();
+	} catch (error) {
+		res.send({ message: error });
 	}
 };

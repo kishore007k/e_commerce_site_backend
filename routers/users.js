@@ -5,11 +5,13 @@ import {
 	getSingleUser,
 	editUser,
 	deleteUser,
-	changePassword,
 	loginUser,
 	accountActivation,
+	resetPassword,
+	resetPasswordRender,
+	forgotPassword,
 } from "../controllers/users.js";
-import { auth } from "../middleware/auth.js";
+import { auth, userCheck } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -19,7 +21,9 @@ router.post("/signUp", addUser);
 router.post("/signIn", loginUser);
 router.post("/edit", auth, editUser);
 router.delete("/delete", auth, deleteUser);
-router.post("/cPassword", auth, changePassword);
 router.get("/verify/:secretKey", accountActivation);
+router.post("/forgotPass/:email/:secretKey", forgotPassword);
+router.get("/resetPass/:email/:secretKey", userCheck, resetPasswordRender);
+router.post("/resetPass/:email/:secretKey", resetPassword);
 
 export default router;

@@ -5,7 +5,7 @@ import { isAdmin, isAuth, loginCheck } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/isAdmin", admin);
+router.get("/:id", admin);
 router.post("/signUp", signUp);
 router.get("/user", loginCheck, isAuth, isAdmin, allUser);
 

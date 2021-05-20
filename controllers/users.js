@@ -6,6 +6,7 @@ import cryptoRandomString from "crypto-random-string";
 
 import { JWT_SECRET } from "../config/keys.js";
 import SendEmail from "../auth/SendEmail.js";
+import ForgotPass from "../auth/ForgotPass.js";
 
 export const getAllUsers = async (req, res) => {
 	try {
@@ -53,6 +54,9 @@ export const addUser = async (req, res) => {
 	} else {
 		if (validateEmail(email)) {
 			userName = toTitleCase(userName);
+			if (password !== cPassword) {
+				res.send({ message: "Password doesn't not match" });
+			}
 			if ((password.length > 255) | (password.length < 8)) {
 				error = {
 					...error,
@@ -142,36 +146,6 @@ export const deleteUser = async (req, res) => {
 	}
 };
 
-export const changePassword = async (req, res) => {
-	let { uId, oldPassword, newPassword } = req.body;
-	if (!uId || !oldPassword || !newPassword) {
-		return res.json({ message: "All filled must be required" });
-	} else {
-		const data = await UserModal.findOne({ _id: uId });
-		if (!data) {
-			return res.json({
-				error: "Invalid user",
-			});
-		} else {
-			const oldPassCheck = await bcrypt.compare(oldPassword, data.password);
-			if (oldPassCheck) {
-				newPassword = bcrypt.hashSync(newPassword, 10);
-				let passChange = UserModal.findByIdAndUpdate(uId, {
-					password: newPassword,
-				});
-				passChange.exec((err, result) => {
-					if (err) console.log(err);
-					return res.json({ success: "Password updated successfully" });
-				});
-			} else {
-				return res.json({
-					error: "Your old password is wrong!!",
-				});
-			}
-		}
-	}
-};
-
 export const loginUser = async (req, res) => {
 	let { email, password } = req.body;
 	if (!email || !password) {
@@ -212,10 +186,48 @@ export const accountActivation = async (req, res) => {
 	const user = await UserModal.findOne({ secretKey: secretKey });
 
 	if (user) {
-		console.log(user);
 		user.verified = true;
 		await user.save();
-		res.redirect("/");
+		res.redirect("/profile");
+	} else {
+		res.json({ message: "User not found" });
+	}
+};
+
+export const forgotPassword = async (req, res) => {
+	const { email, secretKey } = req.params;
+
+	const user = await UserModal.findOne({ secretKey: secretKey });
+
+	try {
+		if (user) {
+			ForgotPass(email, secretKey);
+			res.send({ message: "Password Reset Link has been sent to your email." });
+		}
+	} catch (error) {
+		res.send({ message: error });
+	}
+};
+
+export const resetPasswordRender = async (req, res) => {
+	const { email, secretKey } = req.params;
+
+	res.redirect("http://localhost:3000/resetPassword");
+};
+
+export const resetPassword = async (req, res) => {
+	const { newPassword, cNewPassword, id } = req.body;
+
+	const user = await UserModal.findById(id);
+
+	if (user) {
+		if (newPassword !== cNewPassword)
+			res.send({ message: "Passwords doesn't match" });
+		const password = bcrypt.hashSync(newPassword, 10);
+
+		user.password = password;
+		await user.save();
+		return res.json({ success: "Password updated successfully" });
 	} else {
 		res.json({ message: "User not found" });
 	}

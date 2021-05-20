@@ -5,10 +5,10 @@ import { toTitleCase, validateEmail } from "../middleware/auth.js";
 import { JWT_SECRET } from "../config/keys.js";
 
 export const admin = async (req, res) => {
-	let { loggedInUserId } = req.body;
+	let { id: _id } = req.params;
 	try {
-		let loggedInUserRole = await UserModal.findById(loggedInUserId);
-		res.json({ role: loggedInUserRole.userRole }); // Returns the role of the user as 0 or 1
+		let loggedInUserRole = await UserModal.findById(_id);
+		res.json({ role: loggedInUserRole.userRole, data: loggedInUserRole }); // Returns the role of the user as 0 or 1
 	} catch {
 		res.status(404);
 	}
