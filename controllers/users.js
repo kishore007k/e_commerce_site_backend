@@ -25,7 +25,9 @@ export const getSingleUser = async (req, res) => {
 		return res.json({ error: "User Email must be provided" });
 	} else {
 		try {
-			let user = await UserModal.findById(id);
+			let user = await UserModal.findById(id).select(
+				"userName email userImage _id verified userRole secretKey phoneNumber"
+			);
 			if (user) {
 				return res.send({ user });
 			}
@@ -124,7 +126,7 @@ export const editUser = async (req, res) => {
 
 		const user = await UserModal.findById(uId);
 
-		res.status(200).send({ message: "User Updated Successfully", data: user });
+		res.status(200).send({ message: "User Updated Successfully", user: user });
 	} catch (error) {
 		res.status(400).send({ message: error });
 	}
