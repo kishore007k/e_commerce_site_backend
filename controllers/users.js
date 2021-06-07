@@ -26,7 +26,7 @@ export const getSingleUser = async (req, res) => {
 	} else {
 		try {
 			let user = await UserModal.findById(id).select(
-				"userName email userImage _id verified userRole secretKey phoneNumber"
+				"userName email userImage _id verified userRole secretKey userAddress firstName lastName"
 			);
 			if (user) {
 				return res.send({ user });
