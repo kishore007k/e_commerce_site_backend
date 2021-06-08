@@ -114,13 +114,17 @@ export const addUser = async (req, res) => {
 };
 
 export const editUser = async (req, res) => {
-	const { uId, userName, phoneNumber, userImage } = req.body;
+	const { uId, userName, phoneNumber, userImage, firstName, lastName, email } =
+		req.body;
 
 	try {
 		await UserModal.findByIdAndUpdate(uId, {
 			userName: userName,
 			phoneNumber: phoneNumber,
 			userImage: userImage,
+			firstName: firstName,
+			lastName: lastName,
+			email: email,
 			updatedAt: Date.now(),
 		});
 
