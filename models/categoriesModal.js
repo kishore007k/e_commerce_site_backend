@@ -6,17 +6,9 @@ const categoriesSchema = mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		cDescription: {
-			type: String,
-			required: true,
-		},
 		cImage: {
 			type: String,
 			default: "category.png",
-		},
-		cStatus: {
-			type: String,
-			required: true,
 		},
 	},
 	{ timestamps: true }
