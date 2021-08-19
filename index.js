@@ -3,12 +3,14 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+
 import products from "./routers/products.js";
 import users from "./routers/users.js";
 import admin from "./routers/admin.js";
 import orders from "./routers/orders.js";
 import categories from "./routers/categories.js";
 import dashboard from "./routers/dashboard.js";
+
 import { adminAuth, auth } from "./middleware/auth.js";
 
 const app = express();
@@ -28,7 +30,7 @@ app.use("/api/orders", adminAuth, orders);
 app.use("/api/categories", adminAuth, categories);
 app.use("/dashboard", adminAuth, dashboard);
 
-app.get("/", auth, (req, res) => {
+app.get("/", (req, res) => {
 	res.send("Hello from API");
 });
 

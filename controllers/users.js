@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { toTitleCase, validateEmail } from "../middleware/auth.js";
-import UserModal from "../models/userModal.js";
 import cryptoRandomString from "crypto-random-string";
 
+import UserModal from "../models/userModal.js";
+import { toTitleCase, validateEmail } from "../middleware/auth.js";
 import { JWT_SECRET } from "../config/keys.js";
 import SendEmail from "../auth/SendEmail.js";
 import ForgotPass from "../auth/ForgotPass.js";
